@@ -162,5 +162,3 @@ int main()
   desenha_postits(4, v);
 
 }
-
-Aqui está a implementação da função acha_postit.
