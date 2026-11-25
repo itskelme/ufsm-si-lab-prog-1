@@ -5,36 +5,39 @@
 #include "tela.h"
 
 // Trabalho 3 - Laboratorio de Programacao 1 - Diego Kelme
-// Gerenciador de notas (post-its), conforme https://github.com/BenhurUFSM/l126a/blob/main/Trabalhos/t3.md
+// conforme https://github.com/BenhurUFSM/l126a/blob/main/Trabalhos/t3.md
 
-// Cada nota tem um texto, uma etiqueta de 3 letras, uma cor (rgb) e um
+// Cada nota tem um texto, uma  etiqueta de 3 letras, uma cor (rgb) e um
 // retangulo (posicao e tamanho na tela). As notas ficam num vetor alocado
-// dinamicamente, que cresce quando enche e encolhe quando esvazia. No inicio
-// a gente le o vetor de um arquivo, e grava de volta no fim (e na tecla 'g'),
-// pra nao perder nada.
-//
-// O programa eh modal: a cada momento ele esta em um dos modos abaixo. Cada
-// modo eh uma funcao com um laco while que (1) desenha a tela, (2) le uma
-// tecla e (3) faz a acao correspondente num switch. A main so fica chamando a
-// funcao do modo atual ate o modo virar "fim".
-//   - principal       : navegacao 2D com o cursor por cima dos retangulos
-//   - edita_texto      : altera o texto da nota corrente
-//   - edita_etiqueta   : altera a etiqueta da nota corrente
-//   - edita_cor        : altera a cor da nota corrente
-//   - busca_texto      : altera o texto de busca (filtra as notas)
-//   - busca_etiqueta   : altera a etiqueta de busca (filtra as notas)
-//
-// Esta versao suporta tudo: retangulos + cor + etiquetas.
-//
+// dinamicamente, que  cresce  quando enche e encolhe quando esvazia. No inicio
+// a gente le o vetor de um arquivo, e grava de volta no fim (e na tecla g)
+
+
+// O programa eh modal a cada momento ele esta em um dos modos abaixo. Cada
+// modo eh uma funcao com um laco while que 1. desenha a tela, 2. le uma
+// tecla e 3. faz a acao correspondente num switch e a main so fica chamando a
+// funcao do modo ATUAL ate o modo virar FIM
+
+
+// Para referencia dos modos do programa
+//  - principal         -> navegacao 2D com o cursor por cima dos retangulos
+//   - edita_texto      -> altera o texto  da nota corrente
+//   - edita_etiqueta   -> altera a etiqueta da nota corente
+//   - edita_cor        -> altera a  cor da nota corrente
+//   - busca_texto      -> altera o texto de busca (filtra as notas)
+//   - busca_etiqueta   -> altera a etiqueta de busca (filtra as notas)
+
+// suporta o essencial... retangulos, cor, e  etiquetas.
+
+
+// p/ ajudar
 // compila com: gcc -o l1-t3 l1-t3-diego-kelme.c tela.c
 // executa com: ./l1-t3 [arquivo]
 
 
-// =============================================================
 // constantes e tipos
-// =============================================================
 
-#define MAX_TEXTO     100   // limite de bytes do texto (o enunciado pede pelo menos 100)
+#define MAX_TEXTO     100   // limite de byte do texto (o enunciado pede pelo menos 100)
 #define TAM_ETIQUETA    3   // toda etiqueta tem exatamente 3 caracteres
 #define CAP_INICIAL     8   // capacidade inicial do vetor de notas
 #define MIN_LADO        1   // menor largura/altura que um retangulo pode ter
@@ -42,22 +45,25 @@
 #define ARQ_PADRAO    "notas.txt"
 #define ARQ_PROBLEMAS "notas-problemas.txt"
 
-// uma cor, com os tres componentes rgb entre 0 e 255
+// uma cor 0 a 255
 typedef struct {
 	int r, g, b;
 } cor;
 
-// um ponto na tela (x eh a coluna, y eh a linha)
+// um ponto na tela
+// x eh a coluna, y eh a linha 
 typedef struct {
 	int x, y;
 } ponto;
 
-// um tamanho (largura e altura)
+// um tamanho largura e altura
+
 typedef struct {
 	int larg, alt;
+	
 } tamanho;
 
-// um retangulo: o canto superior esquerdo mais o tamanho
+// um retangulo o canto superior esquerdo mais o tamanho
 typedef struct {
 	ponto pos;
 	tamanho tam;
@@ -165,8 +171,6 @@ bool dentro(retangulo r, ponto p)
 
 // =============================================================
 // vetor de notas com alocacao dinamica
-// =============================================================
-
 // garante que cabe pelo menos mais uma nota no vetor. se estiver cheio,
 // dobra a capacidade. retorna false se a realocacao falhar (ai a gente nega
 // a inclusao e segue com o que tinha)
@@ -189,7 +193,7 @@ bool garante_espaco(estado_t *e)
 }
 
 // encolhe o vetor quando a ocupacao fica muito baixa (menos de 30% da
-// capacidade), pra nao desperdicar memoria. nunca abaixo de CAP_INICIAL
+// capacidade), pra  nao desperdicar memoria. nunca abaixo de CAP_INICIAL
 void talvez_encolhe(estado_t *e)
 {
 	int nova;
@@ -227,7 +231,7 @@ bool insere_nota(estado_t *e, nota nt, int idx)
 	return true;
 }
 
-// remove a nota da posicao idx, puxando as outras pra tras
+// remove a nota da posicao idx,  puxando as outras pra tras
 void remove_nota(estado_t *e, int idx)
 {
 	int i;
@@ -254,10 +258,11 @@ void move_nota(estado_t *e, int origem, int destino)
 
 // =============================================================
 // filtragem pela busca e escolha da nota corrente
-// =============================================================
 
 // a nota de indice i deve ser ignorada por causa do texto ou da etiqueta de
 // busca? (se a busca de texto nao bater, ou a etiqueta nao comecar igual)
+
+
 bool filtrada(estado_t *e, int i)
 {
 	nota *nt = &e->notas[i];
@@ -271,8 +276,9 @@ bool filtrada(estado_t *e, int i)
 	}
 	return false;
 }
+ 
+// conta quantas notas estao visivei nao filtradas OK
 
-// conta quantas notas estao visiveis (nao filtradas)
 int conta_visiveis(estado_t *e)
 {
 	int i;
@@ -286,6 +292,8 @@ int conta_visiveis(estado_t *e)
 
 // indice da nota corrente: a nota nao filtrada mais proxima do fim do vetor
 // que esteja debaixo do cursor. retorna -1 se nao tiver nota no cursor
+
+
 int nota_corrente(estado_t *e)
 {
 	int i;
@@ -299,11 +307,12 @@ int nota_corrente(estado_t *e)
 
 
 // =============================================================
-// leitura e escrita do arquivo
-// =============================================================
+// leitura e escrita do  arquivo
 
-// le uma linha do arquivo pra uma string alocada dinamicamente (sem o '\n').
-// retorna NULL no fim do arquivo. quem chama tem que dar free
+// le uma linha do arquivo pra uma string alocada dinamicamente sem o \n
+// retorna NULL no fim do  arquivo. quem  chama tem que dar free OK
+
+
 char *le_linha(FILE *f)
 {
 	int cap = 64;
@@ -352,9 +361,11 @@ bool le_inteiro(const char **p, int *valor)
 	return true;
 }
 
-// interpreta uma linha do arquivo e preenche *nt.
-// retorna false se a linha estiver mal formatada.
-// poe *trunc em true se o texto teve que ser cortado por ser grande demais
+// interpreta uma linha do arquivo e preenche *nt
+// retorna  false se a linha estiver mal formatada
+// poe *trunc em true se o  texto teve que ser cortado por ser grande demais
+
+
 bool interpreta_linha(const char *linha, nota *nt, bool *trunc)
 {
 	const char *p = linha;
@@ -364,7 +375,7 @@ bool interpreta_linha(const char *linha, nota *nt, bool *trunc)
 
 	*trunc = false;
 
-	// pula os espacos do comeco
+	// OK pula os espacos do comeco
 	while (*p == ' ' || *p == '\t') p++;
 
 	// etiqueta: exatamente 3 caracteres validos
@@ -386,7 +397,7 @@ bool interpreta_linha(const char *linha, nota *nt, bool *trunc)
 	if (!le_inteiro(&p, &larg)) return false;
 	if (!le_inteiro(&p, &alt))  return false;
 
-	// o texto comeca depois da aspa de abertura
+	// o texto comeca depois da aspa de abertura OK
 	while (*p == ' ' || *p == '\t') p++;
 	if (*p != '"') {
 		return false;
@@ -396,20 +407,25 @@ bool interpreta_linha(const char *linha, nota *nt, bool *trunc)
 	while (*p != '\0' && *p != '"') {
 		ch = (unsigned char) *p;
 		p++;
-		// sem suporte a utf8: ignora codigos acima de 126 e os de controle
+		// sem suporte a utf8 ignora codigos acima de 126 e os de controle
+		
+		
 		if (ch < 32 || ch > 126) continue;
 		if (k < MAX_TEXTO) {
 			nt->texto[k++] = ch;
 		} else {
-			*trunc = true;   // sobrou texto, a linha vai pro arquivo de problemas
+			*trunc = true;   
+			// sobrou texto, a linha vai pro arquivo de problemas OK
 		}
 	}
 	if (*p != '"') {
-		return false;   // faltou fechar as aspas
+		return false;   // faltou fechar as aspas OK
 	}
 	nt->texto[k] = '\0';
 
 	// guarda a cor e o retangulo, ja ajustando aos limites validos
+	
+	
 	nt->c.r = limita(r, 0, 255);
 	nt->c.g = limita(g, 0, 255);
 	nt->c.b = limita(b, 0, 255);
@@ -430,8 +446,9 @@ void grava_problema(const char *linha)
 	fclose(f);
 }
 
-// le todas as notas do arquivo pro estado.
-// le uma linha de cada vez: se a linha estiver boa, inclui a nota; se estiver
+// le todas as notas do arquivo pro estado
+
+// le uma linha de cada vez se a linha estiver boa, inclui a nota; se estiver
 // estragada (ou o texto for longo demais), copia a linha pro arquivo de
 // problemas e segue lendo as outras
 void carrega_arquivo(estado_t *e)
@@ -462,7 +479,7 @@ void grava_nota(FILE *f, nota *nt)
 	        nt->etiqueta, nt->c.r, nt->c.g, nt->c.b,
 	        nt->ret.pos.x, nt->ret.pos.y, nt->ret.tam.larg, nt->ret.tam.alt,
 	        nt->texto);
-}
+}	
 
 // grava todas as notas no arquivo
 void grava_arquivo(estado_t *e)
@@ -478,11 +495,7 @@ void grava_arquivo(estado_t *e)
 }
 
 
-// =============================================================
-// acoes (uma funcao por acao; estas funcoes NAO escrevem na tela,
-// so mexem nos dados)
-// =============================================================
-
+// acoes (uma funcao por acao estas funcoes NAO escrevem na tela, so mexem nos dados)
 // anda com o cursor um passo na direcao dada, sem deixar sair da tela
 void move_cursor(estado_t *e, int dx, int dy)
 {
@@ -546,6 +559,8 @@ void reinsere_removida(estado_t *e)
 }
 
 // poe o cursor em cima da nota mais proxima do fim do vetor
+
+
 void pula_para_nota(estado_t *e)
 {
 	int i;
@@ -559,8 +574,8 @@ void pula_para_nota(estado_t *e)
 		return;
 	}
 }
-
-// move o retangulo da nota corrente um passo, levando o cursor junto
+ 
+// move o retangulo da nota corrente um passo, levando o cursor junto OK
 void move_retangulo(estado_t *e, int dx, int dy)
 {
 	int corr = nota_corrente(e);
@@ -571,7 +586,10 @@ void move_retangulo(estado_t *e, int dx, int dy)
 		return;
 	}
 	r = &e->notas[corr].ret;
+	
+	
 	// so move se o retangulo continuar inteiro dentro da tela
+	
 	if (r->pos.x + dx >= 1 && r->pos.x + r->tam.larg - 1 + dx <= e->tela_larg
 	 && r->pos.y + dy >= 1 && r->pos.y + r->tam.alt - 1 + dy <= e->tela_alt) {
 		r->pos.x += dx;
@@ -580,8 +598,9 @@ void move_retangulo(estado_t *e, int dx, int dy)
 	move_cursor(e, dx, dy);
 }
 
-// aumenta o retangulo da nota corrente na direcao indicada (sem mexer no
-// outro lado), se tiver espaco na tela
+// aumenta o retangulo da nota corrente na direcao indicada sem mexer no outro lado, se tiver spaco na tela
+
+
 void aumenta_retangulo(estado_t *e, char dir)
 {
 	int corr = nota_corrente(e);
@@ -613,11 +632,14 @@ void diminui_retangulo(estado_t *e, char dir)
 		r->tam.larg--;
 		if (e->cursor.x > r->pos.x + r->tam.larg - 1) e->cursor.x = r->pos.x + r->tam.larg - 1;
 	}
-	if (dir == 'k' && r->tam.alt > MIN_LADO) {         // encolhe por cima
+	if (dir == 'k' && r->tam.alt > MIN_LADO) {       
+	  // encolhe por cima
 		r->pos.y++; r->tam.alt--;
 		if (e->cursor.y < r->pos.y) e->cursor.y = r->pos.y;
 	}
-	if (dir == 'j' && r->tam.alt > MIN_LADO) {         // encolhe por baixo
+	if (dir == 'j' && r->tam.alt > MIN_LADO) {         
+	
+	// encolhe por baixo
 		r->tam.alt--;
 		if (e->cursor.y > r->pos.y + r->tam.alt - 1) e->cursor.y = r->pos.y + r->tam.alt - 1;
 	}
@@ -651,7 +673,7 @@ void remove_char(char *s, int pos)
 	}
 }
 
-// insere o caractere ch na posicao pos da string s, se couber (limite max)
+// insere o caractere ch na posicao pos da string s, se couber limite maximo
 bool insere_char(char *s, int pos, char ch, int max)
 {
 	int i;
@@ -663,34 +685,40 @@ bool insere_char(char *s, int pos, char ch, int max)
 	}
 	s[pos] = ch;
 	s[tam + 1] = '\0';
+	
+	
 	return true;
 }
 
 
-// =============================================================
-// desenho (uma funcao por modo; TODO comando de saida pra tela mora aqui)
-// =============================================================
+
+// desenho (uma funcao  por modo; TODO comando de saida pra tela mora aqui)
 
 // imprime um caractere na posicao (lin, col), so se estiver dentro da tela
 void poe_char(estado_t *e, int lin, int col, char ch)
 {
-	if (lin < 1 || lin > e->tela_alt) return;
+	if (lin < 1  || lin > e->tela_alt) return;
 	if (col < 1 || col > e->tela_larg) return;
 	t_lincol(lin, col);
 	putchar(ch);
 }
 
 // desenha uma nota: pinta o retangulo com a cor dela, escreve o texto fluindo
-// pelas linhas e poe a etiqueta no canto de cima a esquerda
+// pelas  linhas e poe a etiqueta no canto de  cima a esquerda
+
+
+
 void desenha_nota(estado_t *e, int idx)
 {
 	nota *nt = &e->notas[idx];
 	cor fundo = nt->c;
 	cor letra = cor_contraste(fundo);
 	retangulo r = nt->ret;
+	
+	
 	int tam = strlen(nt->texto);
 	int p = 0;
-	int dl, dc, i;
+	int dl, dc,  i;
 	char ch;
 
 	t_corfundo(fundo.r, fundo.g, fundo.b);
@@ -729,7 +757,7 @@ void desenha_moldura(estado_t *e, int idx)
 		poe_char(e, l + dl - 1, col + i, '=');
 	}
 	for (i = 0; i < dl; i++) {
-		poe_char(e, l + i, col, '|');
+		poe_char(e, l +  i, col, '|');
 		poe_char(e, l + i, col + dc - 1, '|');
 	}
 }
@@ -773,7 +801,7 @@ void desenha_texto_editavel(estado_t *e, int linha0, const char *s, int cur)
 	t_lincol(lin, col);
 }
 
-// tela do modo principal
+// tela do  modo principal
 void desenha_principal(estado_t *e)
 {
 	int i, corr;
@@ -796,7 +824,8 @@ void desenha_principal(estado_t *e)
 	         "notas:%d/%d  busca:\"%s\"  etiq:\"%s\"  "
 	         "[hjkl]move [n]ova [e]dita [c]or [t]ag [b]usca [g]rava [ESC]sai",
 	         conta_visiveis(e), e->n, e->busca_t, e->busca_e);
-	desenha_status(e, info);
+	desenha_status(e,  info);
+	
 
 	// o cursor por cima de tudo
 	t_cursor(c_bloco, c_pisca);
@@ -810,8 +839,11 @@ void desenha_edita_texto(estado_t *e)
 	t_limpa();
 	t_cornormal();
 	t_lincol(1, 1);
+	
 	printf("EDICAO DE TEXTO   [Enter] confirma   [ESC] cancela");
+	
 	desenha_texto_editavel(e, 3, e->edt_texto, e->edt_cursor);
+	
 	fflush(stdout);
 }
 
@@ -830,7 +862,7 @@ void desenha_edita_etiqueta(estado_t *e)
 	fflush(stdout);
 }
 
-// tela do modo de edicao de cor
+// tela do modo de edicao de cor OK
 void desenha_edita_cor(estado_t *e)
 {
 	cor c = e->edt_cor;
@@ -878,7 +910,7 @@ void desenha_busca_texto(estado_t *e)
 	fflush(stdout);
 }
 
-// tela do modo de busca por etiqueta
+// tela do modo de busca por  etiqueta
 void desenha_busca_etiqueta(estado_t *e)
 {
 	t_limpa();
@@ -893,13 +925,12 @@ void desenha_busca_etiqueta(estado_t *e)
 }
 
 
-// =============================================================
-// os modos (cada um eh um while que desenha a tela, le uma tecla e faz a
-// acao no switch). a tecla so e lida depois de um do/while pra esperar o
-// usuario, ja que o t_tecla nao bloqueia (devolve T_NADA se nada foi teclado)
-// =============================================================
+// conforme orientacao do prof
+// os modos cada um eh um while que desenha a tela, le uma tecla e faz 
+// acao no switch... a tecla so e lida depois de um do/while pra esperar o
+// usuario, ja que o t_tecla nao  bloqueia (devolve T_NADA se nada foi teclado)
 
-// modo principal: navegacao 2D com o cursor por cima dos retangulos
+// modo principal eh p/ navegacao 2D com o cursor  por cima dos retangulos
 void executa_principal(estado_t *e)
 {
 	tecla_t tecla;
@@ -927,7 +958,7 @@ void executa_principal(estado_t *e)
 			case 'K': case T_S_CIMA:     move_retangulo(e,  0, -1); break;
 			case 'J': case T_S_BAIXO:    move_retangulo(e,  0, +1); break;
 
-			// aumentar o retangulo (ctrl + direcao)
+			//aumentar o retangulo (ctrl + direcao)
 			case T_CTRL_H: case T_C_ESQUERDA: aumenta_retangulo(e, 'h'); break;
 			case T_CTRL_L: case T_C_DIREITA:  aumenta_retangulo(e, 'l'); break;
 			case T_CTRL_K: case T_C_CIMA:     aumenta_retangulo(e, 'k'); break;
@@ -962,7 +993,8 @@ void executa_principal(estado_t *e)
 			case 'b': e->modo = busca_texto;    break;
 			case 'B': e->modo = busca_etiqueta; break;
 
-			default: ;   // qualquer outra tecla eh ignorada
+			default: ;   
+			// qualquer outra tecla eh ignorada
 		}
 	}
 }
@@ -1036,6 +1068,7 @@ void executa_edita_texto(estado_t *e)
 void executa_edita_etiqueta(estado_t *e)
 {
 	tecla_t tecla;
+	
 	int corr, i, tam;
 
 	// ao entrar, copia a etiqueta da nota corrente (se houver)
@@ -1052,12 +1085,16 @@ void executa_edita_etiqueta(estado_t *e)
 
 		tam = strlen(e->edt_etiqueta);
 		switch ((int) tecla) {
+			
 			case T_ESC: case T_CTRL_C:
 				e->modo = principal;
 				break;
 			case T_BS: case T_CTRL_B:
-				if (tam > 0) e->edt_etiqueta[tam - 1] = '\0';
+				if (tam >  0) e->edt_etiqueta[tam - 1] = '\0';
 				break;
+				
+				
+			
 			case T_ENTER:   // aplica na nota corrente
 				if (tam == TAM_ETIQUETA) {
 					corr = nota_corrente(e);
@@ -1065,9 +1102,11 @@ void executa_edita_etiqueta(estado_t *e)
 					e->modo = principal;
 				}
 				break;
-			case T_CTRL_T: case T_ALT_ENTER:   // aplica em todas as visiveis
+				
+				
+			case T_CTRL_T: case T_ALT_ENTER: 
 				if (tam == TAM_ETIQUETA) {
-					for (i = 0; i < e->n; i++) {
+					for (i = 0;  i < e->n; i++) {
 						if (!filtrada(e, i)) strcpy(e->notas[i].etiqueta, e->edt_etiqueta);
 					}
 					e->modo = principal;
@@ -1099,6 +1138,7 @@ void executa_edita_cor(estado_t *e)
 	bool digitou;
 
 	// ao entrar, copia a cor da nota corrente (se houver)
+	
 	corr = nota_corrente(e);
 	if (corr >= 0) e->edt_cor = e->notas[corr].c;
 	e->comp_sel = 0;
@@ -1114,25 +1154,26 @@ void executa_edita_cor(estado_t *e)
 		comp = componente(e);
 		digitou = false;
 		switch ((int) tecla) {
+			
 			case 'e': case 'r': e->comp_sel = 0; break;
 			case 'v': case 'g': e->comp_sel = 1; break;
 			case 'a': case 'b': e->comp_sel = 2; break;
+			
 			case 'l': case T_DIREITA:  e->comp_sel = (e->comp_sel + 1) % 3; break;
 			case 'h': case T_ESQUERDA: e->comp_sel = (e->comp_sel + 2) % 3; break;
 
 			case 'k': case T_CIMA:    if (*comp < 255) (*comp)++; break;
 			case 'j': case T_BAIXO:   if (*comp > 0)   (*comp)--; break;
-			case 'K': case T_S_CIMA:  *comp = limita(*comp + 16, 0, 255); break;
-			case 'J': case T_S_BAIXO: *comp = limita(*comp - 16, 0, 255); break;
+			case 'K': case T_S_CIMA:  *comp = limita(*comp + 16, 0, 255); break;	case 'J': case T_S_BAIXO: *comp = limita(*comp - 16, 0, 255); break;
 
-			case T_ENTER:   // aplica na nota corrente
+			case T_ENTER:     // aplica na nota corrente
 				corr = nota_corrente(e);
 				if (corr >= 0) e->notas[corr].c = e->edt_cor;
 				e->modo = principal;
 				break;
-			case T_CTRL_T: case T_ALT_ENTER:   // aplica em todas as visiveis
-				for (i = 0; i < e->n; i++) {
-					if (!filtrada(e, i)) e->notas[i].c = e->edt_cor;
+			case T_CTRL_T: case T_ALT_ENTER:  // aplica em todas as visiveis
+				for (i = 0;  i < e->n; i++) {
+					if (!filtrada(e,  i)) e->notas[i].c = e->edt_cor;
 				}
 				e->modo = principal;
 				break;
@@ -1141,7 +1182,7 @@ void executa_edita_cor(estado_t *e)
 				break;
 
 			default:
-				if (tecla >= '0' && tecla <= '9') {   // digita o valor do componente
+				if (tecla >= '0' && tecla <=  '9') {    //digita o valor do componente
 					int d = tecla - '0';
 					if (e->ultimo_digito && *comp * 10 + d <= 255) {
 						*comp = *comp * 10 + d;
@@ -1172,16 +1213,18 @@ void executa_busca_texto(estado_t *e)
 
 		tam = strlen(e->busca_t);
 		switch ((int) tecla) {
-			case T_ESC: case T_CTRL_C:   // esvazia a busca e volta
+			case T_ESC: case T_CTRL_C:     // esvazia a busca e volta
 				e->busca_t[0] = '\0';
 				e->busca_cursor = 0;
 				e->modo = principal;
+				
 				break;
 			case T_ENTER:
 				e->modo = principal;
+				
 				break;
 			case T_BS: case T_CTRL_B:
-				if (e->busca_cursor > 0) {
+				if (e->busca_cursor  > 0) {
 					e->busca_cursor--;
 					remove_char(e->busca_t, e->busca_cursor);
 				}
@@ -1193,14 +1236,17 @@ void executa_busca_texto(estado_t *e)
 				if (e->busca_cursor > 0) e->busca_cursor--;
 				break;
 			case T_DIREITA: case T_CTRL_L:
+				
 				if (e->busca_cursor < tam) e->busca_cursor++;
 				break;
+				
 			case T_HOME: case T_CTRL_K:
 				e->busca_cursor = 0;
 				break;
 			case T_END: case T_CTRL_J:
-				e->busca_cursor = tam;
+				e->busca_cursor =  tam;
 				break;
+				
 			default:
 				if (valido_texto(tecla)) {
 					if (insere_char(e->busca_t, e->busca_cursor, tecla, MAX_TEXTO)) {
@@ -1226,16 +1272,22 @@ void executa_busca_etiqueta(estado_t *e)
 
 		tam = strlen(e->busca_e);
 		switch ((int) tecla) {
-			case T_ESC: case T_CTRL_C:   // esvazia a etiqueta de busca e volta
+			case T_ESC: case T_CTRL_C:  
+			
+			// esvazia a etiqueta de busca e volta
 				e->busca_e[0] = '\0';
 				e->modo = principal;
+				
 				break;
+				
 			case T_ENTER:
 				e->modo = principal;
 				break;
 			case T_BS: case T_CTRL_B:
 				if (tam > 0) e->busca_e[tam - 1] = '\0';
 				break;
+				
+				
 			default:
 				if (valido_etiqueta(tecla) && tam < TAM_ETIQUETA) {
 					e->busca_e[tam] = tecla;
@@ -1246,11 +1298,7 @@ void executa_busca_etiqueta(estado_t *e)
 }
 
 
-// =============================================================
-// inicializacao e laco principal
-// =============================================================
-
-// inicializa o estado e le as notas do arquivo
+ //inicializa o estado e le as notas do arquivo
 void inicializa(estado_t *e, const char *nome)
 {
 	e->modo = principal;
@@ -1264,6 +1312,8 @@ void inicializa(estado_t *e, const char *nome)
 	e->busca_cursor = 0;
 	e->comp_sel = 0;
 	e->ultimo_digito = false;
+	
+	
 	strncpy(e->nome_arquivo, nome, sizeof(e->nome_arquivo) - 1);
 	e->nome_arquivo[sizeof(e->nome_arquivo) - 1] = '\0';
 	carrega_arquivo(e);
@@ -1280,20 +1330,29 @@ int main(int argc, char *argv[])
 
 	// descobre o tamanho da tela, com um valor de reserva caso nao responda
 	t_tamanho(&e.tela_larg, &e.tela_alt);
+	
+	
 	if (e.tela_larg <= 0) e.tela_larg = 80;
 	if (e.tela_alt  <= 0) e.tela_alt  = 24;
+	
+	
 	e.cursor.x = e.tela_larg / 2;
 	e.cursor.y = e.tela_alt / 2;
 
-	// laco principal: chama a funcao do modo atual ate pedir pra terminar
+	//o laco principal: chama a funcao do modo atual ate pedir pra terminar
 	while (e.modo != fim) {
+		
 		switch (e.modo) {
 			case principal:      executa_principal(&e);      break;
+			
 			case edita_texto:    executa_edita_texto(&e);    break;
 			case edita_etiqueta: executa_edita_etiqueta(&e); break;
 			case edita_cor:      executa_edita_cor(&e);      break;
+			
 			case busca_texto:    executa_busca_texto(&e);    break;
 			case busca_etiqueta: executa_busca_etiqueta(&e); break;
+			
+			
 			default: ;
 		}
 	}
