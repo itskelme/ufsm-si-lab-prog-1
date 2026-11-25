@@ -32,3 +32,7 @@ gcc -Wall -std=c99 -o t3 l1-t3-diego-kelme.c tela.c && ./t3 notas.txt
 ```
 
 O T3 tem testes automatizados em [`testes/`](trabalhos/t3-gerenciador-de-notas/testes): `drv.py` roda o programa num pseudo-terminal (Linux).
+
+## Licença
+
+[CC BY-NC 4.0](LICENSE): uso pessoal e modificação permitidos com atribuição; uso comercial proibido.
